@@ -1,8 +1,13 @@
+import { connection } from 'next/server';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DashboardClient from './dashboard-client';
 
+export const instant = false;
+
+
 export default async function MerchantDashboard() {
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },
@@ -22,7 +27,6 @@ export default async function MerchantDashboard() {
     redirect('/login');
   }
 
-  // Merchant info
   const { data: merchant } = await supabase
     .from('merchants')
     .select('id, business_name, status')
@@ -41,11 +45,9 @@ export default async function MerchantDashboard() {
     );
   }
 
-  // Saldo via RPC
   const { data: balanceData } = await supabase.rpc('get_merchant_balance');
   const balance = balanceData?.balance ?? 0;
 
-  // Recente transacties (5)
   const { data: txns } = await supabase
     .from('transactions')
     .select('id, amount, currency, reference, created_at, customer_id')
@@ -53,7 +55,6 @@ export default async function MerchantDashboard() {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  // Pending redemption requests
   const { data: pendingRequests } = await supabase
     .from('redemption_requests')
     .select('id, amount, status, submitted_at')

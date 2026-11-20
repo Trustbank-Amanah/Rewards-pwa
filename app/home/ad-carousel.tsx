@@ -19,7 +19,7 @@ export default function AdCarousel({ ads }: { ads: MerchantAd[] }) {
   const ad = ads[current];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-[#1A1F24] text-white h-44 mb-6">
+    <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white h-44 mb-6">
       {/* Achtergrond-afbeelding */}
       {ad.image_url && (
         <div
@@ -29,27 +29,22 @@ export default function AdCarousel({ ads }: { ads: MerchantAd[] }) {
       )}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1A1F24] via-[#1A1F24]/70 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent" />
 
       {/* Content */}
-      <div className="relative h-full p-6 flex flex-col justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-[#A39B8B]">
-            {ad.merchant_name}
+      <div className="relative h-full p-6 flex flex-col justify-center">
+        <p className="text-xs uppercase tracking-wide text-white/70">
+          {ad.merchant_name}
+        </p>
+        <h3 className="text-xl font-bold mt-1">{ad.title}</h3>
+        {ad.description && (
+          <p className="text-sm text-white/80 mt-1 line-clamp-2">
+            {ad.description}
           </p>
-          <h3 className="text-xl font-bold mt-1">{ad.title}</h3>
-          {ad.description && (
-            <p className="text-sm text-[#C4BDB0] mt-1 line-clamp-2">{ad.description}</p>
-          )}
-        </div>
-        {ad.cta_text && (
-          <span className="inline-block self-start bg-white text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-full">
-            {ad.cta_text}
-          </span>
         )}
       </div>
 
-      {/* Dots */}
+      {/* Dots voor handmatige navigatie */}
       {ads.length > 1 && (
         <div className="absolute bottom-3 right-3 flex gap-1.5">
           {ads.map((_, i) => (

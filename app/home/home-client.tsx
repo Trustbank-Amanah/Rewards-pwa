@@ -1,49 +1,56 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import AdCarousel from './ad-carousel';
 import QRModal from './qr-modal';
-import type { MerchantAd, Transaction, Voucher } from '@/lib/types';
-import { createClient } from '@/lib/supabase/client';
+import type { MerchantAd, Voucher } from '@/lib/types';
 
 interface Props {
   profileName: string;
   voucher: Voucher | null;
   ads: MerchantAd[];
-  transactions: Transaction[];
 }
 
-export default function HomeClient({ profileName, voucher, ads, transactions }: Props) {
+export default function HomeClient({voucher, ads }: Props) {
   const [qrOpen, setQrOpen] = useState(false);
-  const router = useRouter();
-
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
-  }
 
   return (
-    <div className="min-h-screen bg-[#F4F4F2]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#E2DFD9] sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-[#6B6F75]">Welkom</p>
-            <p className="text-sm font-semibold" style={{ color: '#1A1F24' }}>
-              {profileName.split(' ')[0]}
-            </p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-xs text-[#6B6F75] hover:text-slate-700"
+    <div className="min-h-screen bg-slate-50">
+                {/* Header — donkerblauw met logo */}
+          <header
+            className="sticky top-0 z-10"
+            style={{ backgroundColor: '#0A1F44' }}
           >
-            Uitloggen
-          </button>
-        </div>
-      </header>
+            <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between relative">
+              {/* Logo links */}
+            <Image
+              src="/Amanah_logo.png"
+              alt="Amanah"
+              width={120}
+              height={32}
+              className="h-8 w-auto"
+              style={{ width: 'auto', height: 'auto' }}
+            />
+
+              {/* "Rewards" gecentreerd */}
+              <span
+                className="absolute left-1/2 -translate-x-1/2 text-white text-xl"
+                style={{
+                  fontFamily: 'var(--font-playfair)',
+                  fontStyle: 'italic',
+                  fontWeight: 700,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                Rewards
+              </span>
+
+              {/* Lege div rechts om balans te houden (zelfde breedte als logo) */}
+              <div className="w-16" />
+            </div>
+          </header>
 
       <main className="max-w-md mx-auto p-4 pb-24">
         {/* Ad-carousel */}
@@ -51,32 +58,42 @@ export default function HomeClient({ profileName, voucher, ads, transactions }: 
 
         {/* Saldo-card */}
         {voucher ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-[#E2DFD9] p-6 mb-4 text-center">
-            <p className="text-xs uppercase tracking-wide text-[#6B6F75]">Mijn punten</p>
-            <p className="text-4xl font-bold mt-1" style={{ color: '#1A1F24' }}>
-              {voucher.current_balance.toFixed(0)} punten
-            </p>
-            <p className="text-xs text-[#6B6F75] mt-1">
-              = SRD {voucher.current_balance.toFixed(2)} bij een merchant
-            </p>
-            <p className="text-xs text-[#A39B8B] mt-3 font-mono">
-              {voucher.voucher_number}
-            </p>
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                {voucher.status.toUpperCase()}
-              </span>
-              {voucher.expires_at && (
-                <span className="text-xs text-[#6B6F75]">
-                  Verloopt {new Date(voucher.expires_at).toLocaleDateString('nl-NL')}
+          <div
+            className="rounded-2xl overflow-hidden mb-4 relative"
+            style={{
+              backgroundImage: 'url(/card_background.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="relative p-6 text-center">
+              <p className="text-xs uppercase tracking-wide text-white/80">
+                Mijn punten
+              </p>
+              <p className="text-4xl font-bold mt-1 text-white">
+                {voucher.current_balance.toFixed(0)} punten
+              </p>
+              <p className="text-xs text-white/60 mt-3 font-mono">
+                {voucher.voucher_number}
+              </p>
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-white/20 text-white backdrop-blur-sm">
+                  {voucher.status.toUpperCase()}
                 </span>
-              )}
+                {voucher.expires_at && (
+                  <span className="text-xs text-white/80">
+                    Verloopt{' '}
+                    {new Date(voucher.expires_at).toLocaleDateString('nl-NL')}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-[#E2DFD9] p-6 mb-4 text-center">
-            <p className="text-sm text-[#6B6F75]">Geen actieve voucher gevonden.</p>
-            <p className="text-xs text-[#A39B8B] mt-1">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-4 text-center">
+            <p className="text-sm text-slate-500">Geen actieve voucher gevonden.</p>
+            <p className="text-xs text-slate-400 mt-1">
               Je voucher verschijnt hier zodra de bank er een aanmaakt.
             </p>
           </div>
@@ -86,47 +103,28 @@ export default function HomeClient({ profileName, voucher, ads, transactions }: 
         <button
           onClick={() => setQrOpen(true)}
           disabled={!voucher || voucher.current_balance <= 0}
-          className="w-full bg-[#1A1F24] text-white py-3.5 rounded-xl font-semibold hover:bg-[#2C333A] disabled:opacity-50 disabled:cursor-not-allowed transition mb-4"
+          className="w-full text-white py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition mb-3"
+          style={{ backgroundColor: '#0A1F44' }}
         >
           Toon QR aan merchant
         </button>
 
-        {/* Transacties */}
-        <div className="bg-white rounded-2xl border border-[#E2DFD9] overflow-hidden">
-          <div className="p-4 border-b border-[#EEEDEA]">
-            <h2 className="font-semibold text-sm" style={{ color: '#1A1F24' }}>
-              Recente transacties
-            </h2>
-          </div>
-          {transactions.length === 0 ? (
-            <p className="p-6 text-sm text-[#6B6F75] text-center">
-              Nog geen transacties.
-            </p>
-          ) : (
-            <ul>
-              {transactions.map((t) => (
-                <li
-                  key={t.id}
-                  className="flex justify-between items-center px-4 py-3 border-b border-[#EEEDEA] last:border-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: '#1A1F24' }}>
-                      {t.merchant_name ?? 'Trustbank Amanah'}
-                    </p>
-                    <p className="text-xs text-[#6B6F75]">
-                      {new Date(t.created_at).toLocaleString('nl-NL')}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-red-600">
-                      -{t.amount.toFixed(0)} pt
-                    </p>
-                    <p className="text-xs text-[#A39B8B]">{t.reference.slice(0, 12)}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+        {/* Twee navigatie-knoppen */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Link
+            href="/home/transactions"
+            className="bg-white text-center py-3 rounded-xl font-semibold transition hover:bg-slate-50"
+            style={{ borderWidth: 1, borderColor: '#b8b2a0', color: '#0A1F44' }}
+          >
+            Transacties
+          </Link>
+          <Link
+            href="/home/profile"
+            className="bg-white text-center py-3 rounded-xl font-semibold transition hover:bg-slate-50"
+            style={{ borderWidth: 1, borderColor: '#b8b2a0', color: '#0A1F44' }}
+          >
+            Profiel
+          </Link>
         </div>
       </main>
 

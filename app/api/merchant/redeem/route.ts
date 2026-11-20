@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+interface RedeemBody {
+  sessionId: string;
+  amount: number;
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
 
@@ -12,7 +17,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 });
   }
 
-  const { sessionId, amount } = await request.json();
+  let body: RedeemBody;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Ongeldige request body' }, { status: 400 });
+  }
+
+  const { sessionId, amount } = body;
 
   if (!sessionId || typeof sessionId !== 'string') {
     return NextResponse.json({ error: 'Ongeldige sessie' }, { status: 400 });

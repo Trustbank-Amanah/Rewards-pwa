@@ -35,3 +35,14 @@ export interface Profile {
     created_at: string;
     merchant_name: string | null;
   }
+
+  // lib/types.ts
+
+export interface MerchantAd {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  cta_text: string | null;
+  merchant_name: string;
+}

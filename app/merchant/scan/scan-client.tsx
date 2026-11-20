@@ -2,6 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+interface Html5QrcodeInstance {
+  stop: () => Promise<void>;
+  clear: () => void;
+}
+
+interface ValidateResponse {
+  session_id: string;
+  voucher_number: string;
+  balance: number;
+  currency: string;
+  customer_name: string | null;
+}
 
 export default function ScanClient() {
   const router = useRouter();
@@ -9,7 +23,7 @@ export default function ScanClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
-  const scannerRef = useRef<any>(null);
+  const scannerRef = useRef<Html5QrcodeInstance | null>(null);
   const scannerContainerId = 'qr-reader';
 
   async function handleToken(token: string) {
@@ -27,25 +41,27 @@ export default function ScanClient() {
 
       if (!res.ok) throw new Error(data.error);
 
-      // Stop camera
       if (scannerRef.current) {
         try {
           await scannerRef.current.stop();
           scannerRef.current.clear();
-        } catch {}
+        } catch {
+          // negeren
+        }
       }
 
-      // Navigeer naar redeem met session info
+      const validated = data as ValidateResponse;
       const params = new URLSearchParams({
-        sessionId: data.session_id,
-        voucherNumber: data.voucher_number,
-        balance: String(data.balance),
-        currency: data.currency,
-        customerName: data.customer_name ?? 'Klant',
+        sessionId: validated.session_id,
+        voucherNumber: validated.voucher_number,
+        balance: String(validated.balance),
+        currency: validated.currency,
+        customerName: validated.customer_name ?? 'Klant',
       });
       router.push(`/merchant/redeem?${params.toString()}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Onbekende fout';
+      setError(message);
       setLoading(false);
     }
   }
@@ -54,33 +70,28 @@ export default function ScanClient() {
     setError(null);
     setCameraActive(true);
 
-    // Dynamisch importeren om SSR-problemen te voorkomen
     const { Html5Qrcode } = await import('html5-qrcode');
 
     try {
       const scanner = new Html5Qrcode(scannerContainerId);
-      scannerRef.current = scanner;
+      // Html5Qrcode heeft meer methodes dan we hier typen, dus we casten
+      scannerRef.current = scanner as unknown as Html5QrcodeInstance;
 
       await scanner.start(
         { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText) => {
-          handleToken(decodedText);
-        },
-        () => {
-          // Stille fout — genegeerd
-        }
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => handleToken(decodedText),
+        () => {}
       );
-    } catch (err: any) {
+    } catch {
       setError(
         'Camera kon niet worden gestart. Controleer toestemmingen of voer de code handmatig in.'
       );
       setCameraActive(false);
     }
   }
+
+  // ... rest van je component (useEffect + return) blijft ongewijzigd
 
   useEffect(() => {
     return () => {
@@ -94,17 +105,18 @@ export default function ScanClient() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <header
+        className="sticky top-0 z-10"
+        style={{ backgroundColor: '#0A1F44' }}
+      >
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="text-sm text-slate-500 hover:text-slate-700"
+          <Link
+            href="/merchant"
+            className="text-sm text-white/80 hover:text-white"
           >
             ← Terug
-          </button>
-          <p className="text-sm font-semibold" style={{ color: '#1A1F24' }}>
-            Scan klant-QR
-          </p>
+          </Link>
+          <p className="text-sm font-semibold text-white">Scan klant-QR</p>
         </div>
       </header>
 
@@ -118,14 +130,15 @@ export default function ScanClient() {
         {!cameraActive && (
           <button
             onClick={startCamera}
-            className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-semibold hover:bg-slate-800 mb-4"
+            className="w-full text-white py-3.5 rounded-xl font-semibold mb-4"
+            style={{ backgroundColor: '#0A1F44' }}
           >
             Camera starten
           </button>
         )}
 
         {cameraActive && (
-          <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 bg-black">
+          <div className="mb-4 rounded-2xl overflow-hidden border border-slate-200 bg-black">
             <div id={scannerContainerId} className="w-full" />
           </div>
         )}
@@ -135,7 +148,7 @@ export default function ScanClient() {
         )}
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
-          <p className="text-sm font-medium mb-2" style={{ color: '#1A1F24' }}>
+          <p className="text-sm font-medium mb-2" style={{ color: '#0A1F44' }}>
             Of voer de QR-code handmatig in
           </p>
           <p className="text-xs text-slate-500 mb-3">
@@ -151,7 +164,8 @@ export default function ScanClient() {
           <button
             onClick={() => handleToken(manualToken)}
             disabled={loading || !manualToken.trim()}
-            className="w-full bg-slate-900 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 disabled:opacity-50"
+            className="w-full text-white py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50"
+            style={{ backgroundColor: '#0A1F44' }}
           >
             {loading ? 'Bezig...' : 'Token valideren'}
           </button>

@@ -21,7 +21,7 @@ export default async function RedeemPage({
       sessionId={params.sessionId}
       voucherNumber={params.voucherNumber}
       balance={parseFloat(params.balance ?? '0')}
-      currency={params.currency ?? 'SRD'}
+      currency={params.currency ?? 'punten'}
       customerName={params.customerName ?? 'Klant'}
     />
   );

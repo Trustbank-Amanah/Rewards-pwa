@@ -224,7 +224,7 @@ export default function CustomerLoginPage() {
               onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 16))}
               required
               placeholder="5614311234567890"
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg text-lg font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-[#A39B8B]"
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg text-lg font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-[#A39B8B] placeholder: text-black"
             />
             <p className="text-xs text-slate-500 mt-1">16 cijfers, begint met 561431</p>
           </div>

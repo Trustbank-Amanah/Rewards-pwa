@@ -10,7 +10,7 @@ export default function AdCarousel({ ads }: { ads: MerchantAd[] }) {
     if (ads.length <= 1) return;
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % ads.length);
-    }, 5000);
+    }, 4000);
     return () => clearInterval(interval);
   }, [ads.length]);
 
@@ -19,32 +19,27 @@ export default function AdCarousel({ ads }: { ads: MerchantAd[] }) {
   const ad = ads[current];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white h-44 mb-6">
+    <div className="relative overflow-hidden rounded-2xl bg-slate-900 text-white h-48 mb-6">
       {/* Achtergrond-afbeelding */}
       {ad.image_url && (
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-40"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${ad.image_url})` }}
         />
       )}
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent" />
+      {/* Donkere gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-      {/* Content */}
-      <div className="relative h-full p-6 flex flex-col justify-center">
-        <p className="text-xs uppercase tracking-wide text-white/70">
-          {ad.merchant_name}
+      {/* Content — alleen merchant-naam */}
+      <div className="relative h-full p-5 flex flex-col justify-end">
+        <p className="text-xs uppercase tracking-wide text-white/70 font-medium mb-1">
+          Deelnemende merchant
         </p>
-        <h3 className="text-xl font-bold mt-1">{ad.title}</h3>
-        {ad.description && (
-          <p className="text-sm text-white/80 mt-1 line-clamp-2">
-            {ad.description}
-          </p>
-        )}
+        <h3 className="text-2xl font-bold leading-tight">{ad.merchant_name}</h3>
       </div>
 
-      {/* Dots voor handmatige navigatie */}
+      {/* Dots */}
       {ads.length > 1 && (
         <div className="absolute bottom-3 right-3 flex gap-1.5">
           {ads.map((_, i) => (
@@ -54,7 +49,7 @@ export default function AdCarousel({ ads }: { ads: MerchantAd[] }) {
               className={`h-1.5 rounded-full transition-all ${
                 i === current ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
               }`}
-              aria-label={`Ad ${i + 1}`}
+              aria-label={`Merchant ${i + 1}`}
             />
           ))}
         </div>
